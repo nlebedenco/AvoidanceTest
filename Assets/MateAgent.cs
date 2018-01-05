@@ -81,11 +81,18 @@ public class MateAgent : MonoBehaviour
 
     void OnCollisionStay(Collision collision)
     {
-        if (isFearContagious)
+        MateAgent mate = collision.gameObject.GetComponent<MateAgent>();
+        if (mate != null)
         {
-            MateAgent mate = collision.gameObject.GetComponent<MateAgent>();
-            if (mate != null)
+            if ((isFearContagious) && (mate.State == MateState.Scared))
                 mate.Scare(fear);
+
+            if (State == MateState.Safe && mate.State == MateState.Safe)
+                State = MateState.Patrol;
+            else if (State == MateState.Patrol)
+            {
+                RunAwayRandomly(); // a small alteration of one frame to try to slightly move around obstacles
+            }
         }
     }
 
@@ -181,8 +188,7 @@ public class MateAgent : MonoBehaviour
                 }
                 else
                 {
-                    var targetMate = SpawnMates.Queen == null ? FindClosestMate() :
-                                        SpawnMates.Queen == this ? FindClosestMate() : SpawnMates.Queen;
+                    var targetMate = (SpawnMates.Queen == null || SpawnMates.Queen == this) ? FindClosestMate() : SpawnMates.Queen;
                     if (targetMate != null)
                     {
                         if (Vector3.Distance(transform.position, targetMate.transform.position) > minClosestMateDistance)
